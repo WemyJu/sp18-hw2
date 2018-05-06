@@ -43,12 +43,13 @@ public class GlobeSortClient {
         System.out.println("Pinging " + serverStr + "...");
         long curr_time = new Date().getTime();
         serverStub.ping(Empty.newBuilder().build());
-        double latency = (double)(new Date().getTime()-curr_time)/1000.0;
+        double latency = (double)(new Date().getTime()-curr_time)/1000.0/2;
         System.out.println("Ping successful.  Latency: "+latency+" s.");
     }
 
     public void sort(Integer[] values) throws Exception {
         System.out.println("Requesting server to sort array");
+        // System.out.println(Arrays.toString(values));
         long curr_time = new Date().getTime();
         SortArrayInfo sort_request = SortArrayInfo.newBuilder().addAllValues(Arrays.asList(values)).build();
         SortArrayInfo sort_response = serverStub.sortIntegers(sort_request);
@@ -57,6 +58,7 @@ public class GlobeSortClient {
         long sorting_time = sort_response.getSortingTime();
         double one_way_throughput = (double)(total_time-sorting_time)/1000.0/2.0;
         System.out.println("Sorted array");
+        // System.out.println(Arrays.toString(sort_result));
         System.out.println("Application throught: "+(double)(total_time)/1000.0+" s.");
         System.out.println("One-way network throughput: "+one_way_throughput+" s.");
     }
@@ -104,6 +106,7 @@ public class GlobeSortClient {
 
         GlobeSortClient client = new GlobeSortClient(cmd_args.getString("server_ip"), cmd_args.getInt("server_port"));
         try {
+            client.ping();
             client.ping();
             client.sort(values);
         } finally {
