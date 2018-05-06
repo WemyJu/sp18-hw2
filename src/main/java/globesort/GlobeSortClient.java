@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Date;
 
 public class GlobeSortClient {
 
@@ -38,15 +39,26 @@ public class GlobeSortClient {
         this.serverStr = ip + ":" + port;
     }
 
-    public void run(Integer[] values) throws Exception {
+    public void ping() throws Exception {
         System.out.println("Pinging " + serverStr + "...");
+        long curr_time = new Date().getTime();
         serverStub.ping(Empty.newBuilder().build());
-        System.out.println("Ping successful.");
+        double latency = (double)(new Date().getTime()-curr_time)/1000.0;
+        System.out.println("Ping successful.  Latency: "+latency+" s.");
+    }
 
+    public void sort(Integer[] values) throws Exception {
         System.out.println("Requesting server to sort array");
-        IntArray request = IntArray.newBuilder().addAllValues(Arrays.asList(values)).build();
-        IntArray response = serverStub.sortIntegers(request);
+        long curr_time = new Date().getTime();
+        SortArrayInfo sort_request = SortArrayInfo.newBuilder().addAllValues(Arrays.asList(values)).build();
+        SortArrayInfo sort_response = serverStub.sortIntegers(sort_request);
+        Integer[] sort_result = sort_response.getValuesList().toArray(new Integer[sort_response.getValuesCount()]);
+        long total_time = new Date().getTime()-curr_time;
+        long sorting_time = sort_response.getSortingTime();
+        double one_way_throughput = (double)(total_time-sorting_time)/1000.0/2.0;
         System.out.println("Sorted array");
+        System.out.println("Application throught: "+(double)(total_time)/1000.0+" s.");
+        System.out.println("One-way network throughput: "+one_way_throughput+" s.");
     }
 
     public void shutdown() throws InterruptedException {
@@ -92,7 +104,8 @@ public class GlobeSortClient {
 
         GlobeSortClient client = new GlobeSortClient(cmd_args.getString("server_ip"), cmd_args.getInt("server_port"));
         try {
-            client.run(values);
+            client.ping();
+            client.sort(values);
         } finally {
             client.shutdown();
         }

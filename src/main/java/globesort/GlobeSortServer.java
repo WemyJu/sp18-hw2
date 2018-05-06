@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.Date;
 
 public class GlobeSortServer {
     private Server server;
@@ -79,21 +80,18 @@ public class GlobeSortServer {
     static class GlobeSortImpl extends GlobeSortGrpc.GlobeSortImplBase {
         @Override
         public void ping(Empty req, final StreamObserver<Empty> responseObserver) {
-            Empty response = Empty.newBuilder().build();
-            responseObserver.onNext(response);
+            responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }
 
         @Override
-        public void sortIntegers(IntArray req, final StreamObserver<IntArray> responseObserver) {
+        public void sortIntegers(SortArrayInfo req, final StreamObserver<SortArrayInfo> responseObserver) {
             Integer[] values = req.getValuesList().toArray(new Integer[req.getValuesList().size()]);
+            long curr_time = new Date().getTime();
             Arrays.sort(values);
-            IntArray.Builder responseBuilder = IntArray.newBuilder();
-            for(Integer val : values) {
-                responseBuilder.addValues(val);
-            }
-            IntArray response = responseBuilder.build();
-            responseObserver.onNext(response);
+            long sorting_time = new Date().getTime()-curr_time;
+            SortArrayInfo sort_response = SortArrayInfo.newBuilder().addAllValues(Arrays.asList(values)).setSortingTime(sorting_time).build();
+            responseObserver.onNext(sort_response);
             responseObserver.onCompleted();
         }
     }

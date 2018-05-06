@@ -5,12 +5,14 @@ option java_package = "globesort";
 option java_outer_classname = "GlobeSortProto";
 
 service GlobeSort {
-  rpc Ping (Empty) returns (Empty) {}
-  rpc SortIntegers (IntArray) returns (IntArray) {}
+    rpc Ping (Empty) returns (Empty) {}
+    rpc SortIntegers (SortArrayInfo) returns (SortArrayInfo) {}
 }
 
-message Empty { }
+message Empty { 
+}
 
-message IntArray {
-  repeated int32 values = 1;
+message SortArrayInfo {
+    repeated int32 values = 1;
+    int64 sorting_time = 2;
 }
